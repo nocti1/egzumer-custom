@@ -47,29 +47,48 @@ void UI_DisplayWelcome(void)
 	memset(gStatusLine,  0, sizeof(gStatusLine));
 	UI_DisplayClear();
 
-	if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_NONE || gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_FULL_SCREEN) {
+	if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_NONE) {
 		ST7565_FillScreen(0xFF);
 	} else {
 		memset(WelcomeString0, 0, sizeof(WelcomeString0));
 		memset(WelcomeString1, 0, sizeof(WelcomeString1));
 
-		if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_VOLTAGE)
-		{
-			strcpy(WelcomeString0, "VOLTAGE");
-			sprintf(WelcomeString1, "%u.%02uV %u%%",
-				gBatteryVoltageAverage / 100,
-				gBatteryVoltageAverage % 100,
-				BATTERY_VoltsToPercent(gBatteryVoltageAverage));
-		}
-		else
-		{
-			EEPROM_ReadBuffer(0x0EB0, WelcomeString0, 16);
-			EEPROM_ReadBuffer(0x0EC0, WelcomeString1, 16);
-		}
+		if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_FULL_SCREEN) {
+			int BootImage[3][128] = {
+				{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },
+				{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },
+				{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, }
+			};
+			
+			// Loop through each pixel in the image
+			for (int y = 0; y < 3; y++) {
+				for (int x = 0; x < 128; x++) {
+					// Access the current pixel value
+					int pixelValue = BootImage[y][x];
 
-		UI_PrintString(WelcomeString0, 0, 127, 0, 10);
-		UI_PrintString(WelcomeString1, 0, 127, 2, 10);
-		UI_PrintStringSmallNormal(Version, 0, 128, 6);
+					// Call UI_DrawPixelBuffer based on the pixel value
+					UI_DrawPixelBuffer(gFrameBuffer, x, y, pixelValue);
+				}
+			}
+		} else { 
+			if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_VOLTAGE)
+			{
+				strcpy(WelcomeString0, "VOLTAGE");
+				sprintf(WelcomeString1, "%u.%02uV %u%%",
+					gBatteryVoltageAverage / 100,
+					gBatteryVoltageAverage % 100,
+					BATTERY_VoltsToPercent(gBatteryVoltageAverage));
+			}
+			else
+			{
+				EEPROM_ReadBuffer(0x0EB0, WelcomeString0, 16);
+				EEPROM_ReadBuffer(0x0EC0, WelcomeString1, 16);
+			}
+
+			UI_PrintString(WelcomeString0, 0, 127, 0, 10);
+			UI_PrintString(WelcomeString1, 0, 127, 2, 10);
+			UI_PrintStringSmallNormal(Version, 0, 128, 6);
+		}
 
 		ST7565_BlitStatusLine();  // blank status line
 		ST7565_BlitFullScreen();
