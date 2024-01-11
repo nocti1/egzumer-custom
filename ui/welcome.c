@@ -31,11 +31,6 @@
 #include "ui/status.h"
 #include "version.h"
 
-int customRand(int min, int max, int seed) {
-    seed = (seed * 333 + 12345) & 0x7fffffff;  // Linear congruential generator
-    return min + (seed % (max - min + 1));
-}
-
 void UI_DisplayReleaseKeys(void)
 {
 	memset(gStatusLine,  0, sizeof(gStatusLine));
@@ -69,7 +64,7 @@ void UI_DisplayWelcome(void)
 			UI_DisplayClear();
 			ST7565_BlitStatusLine();
 			ST7565_BlitFullScreen();
-			AUDIO_PlayBeep(BEEP_440HZ_500MS);			
+			AUDIO_PlayBeep(BEEP_440HZ_500MS);
 			SYSTEM_DelayMs(300);			
 			if (KEYBOARD_Poll() != KEY_MENU) {
 				while (true) {
@@ -85,12 +80,9 @@ void UI_DisplayWelcome(void)
 							UI_PrintString("RELEASE", 0, 127, 1, 10);
 							UI_PrintString("RIGHT NOW", 0, 127, 3, 10);
 						} else if (ButtonCount < 80) {
-							UI_PrintString("FUCK OFF", 0, 127, 1, 10);
-							UI_PrintString("IDIOT", 0, 127, 3, 10);
+							UI_PrintString("FUCK OFF!", 0, 127, 2, 10);
 						} else {
 							UI_PrintString("UNAUTHORISED", 0, 127, 2, 10);
-						}
-						if (ButtonCount > 100) {
 							AUDIO_PlayBeep(BEEP_440HZ_500MS);
 						}
 					} else {
