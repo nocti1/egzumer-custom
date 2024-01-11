@@ -90,6 +90,9 @@ void UI_DisplayWelcome(void)
 						} else {
 							UI_PrintString("UNAUTHORISED", 0, 127, 2, 10);
 						}
+						if (ButtonCount > 100) {
+							AUDIO_PlayBeep(BEEP_440HZ_500MS);
+						}
 					} else {
 						ButtonCount--;
 						UI_PrintString("UNAUTHORISED", 0, 127, 2, 10);
@@ -108,7 +111,6 @@ void UI_DisplayWelcome(void)
 			ST7565_BlitStatusLine();
 			ST7565_BlitFullScreen();
 			SYSTEM_DelayMs(500);
-			AUDIO_PlayBeep(BEEP_1333HZ_20MS_TRIPLE_BEEP);
 			AUDIO_PlayBeep(BEEP_1333HZ_20MS_TRIPLE_BEEP);
 			AUDIO_PlayBeep(BEEP_1333HZ_20MS_TRIPLE_BEEP);
 		} else { 
