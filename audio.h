@@ -34,7 +34,8 @@ enum BEEP_Type_t
 	BEEP_500HZ_60MS_DOUBLE_BEEP,
 	BEEP_440HZ_40MS_OPTIONAL,
 	BEEP_880HZ_40MS_OPTIONAL,
-	BEEP_880HZ_60MS_TRIPLE_BEEP
+	BEEP_880HZ_60MS_TRIPLE_BEEP,
+	BEEP_1333HZ_20MS_TRIPLE_BEEP
 };
 
 typedef enum BEEP_Type_t BEEP_Type_t;
@@ -42,6 +43,7 @@ typedef enum BEEP_Type_t BEEP_Type_t;
 extern BEEP_Type_t       gBeepToPlay;
 
 void AUDIO_PlayBeep(BEEP_Type_t Beep);
+void AUDIO_PlayWelcomeTone();
 
 enum
 {

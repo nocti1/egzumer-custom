@@ -66,15 +66,13 @@ void UI_DisplayWelcome(void)
 		if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_FULL_SCREEN) {
 			int ButtonCount = 1;
 			ST7565_FillScreen(0xFF);
-			AUDIO_PlayBeep(BEEP_440HZ_500MS);
 			UI_DisplayClear();
-			SYSTEM_DelayMs(1000);			
+			ST7565_BlitStatusLine();
+			ST7565_BlitFullScreen();
+			AUDIO_PlayBeep(BEEP_440HZ_500MS);			
+			SYSTEM_DelayMs(300);			
 			if (KEYBOARD_Poll() != KEY_MENU) {
 				while (true) {
-					BACKLIGHT_TurnOff();
-					UI_DisplayClear();
-					SYSTEM_DelayMs(300);
-					BACKLIGHT_TurnOn();
 					AUDIO_PlayBeep(BEEP_880HZ_60MS_TRIPLE_BEEP);
 					if (KEYBOARD_Poll() != KEY_INVALID) {
 						ButtonCount++;
@@ -85,32 +83,34 @@ void UI_DisplayWelcome(void)
 							UI_PrintString("ALL KEYS", 0, 127, 3, 10);
 						} else if (ButtonCount < 50) {
 							UI_PrintString("RELEASE", 0, 127, 1, 10);
-							UI_PrintString("THEM NOW", 0, 127, 3, 10);
+							UI_PrintString("RIGHT NOW", 0, 127, 3, 10);
 						} else if (ButtonCount < 80) {
 							UI_PrintString("FUCK OFF", 0, 127, 1, 10);
-							UI_PrintString("DOG", 0, 127, 3, 10);
+							UI_PrintString("IDIOT", 0, 127, 3, 10);
 						} else {
-							UI_PrintString("STILL", 0, 127, 1, 10);
-							UI_PrintString("UNAUTHORISED", 0, 127, 3, 10);
-							UI_PrintString("CUNT", 0, 127, 5, 10);
+							UI_PrintString("UNAUTHORISED", 0, 127, 2, 10);
 						}
 					} else {
-						//ButtonCount--;
+						ButtonCount--;
 						UI_PrintString("UNAUTHORISED", 0, 127, 2, 10);
 					}
 					ST7565_BlitStatusLine();
 					ST7565_BlitFullScreen();
+					BACKLIGHT_TurnOff();
+					UI_DisplayClear();
+					SYSTEM_DelayMs(300);
+					BACKLIGHT_TurnOn();
 				}
 			}
 
-			UI_PrintString("Welcome", 0, 127, 2, 10);
+			UI_PrintString("Welcome", 0, 127, 1, 10);
+			UI_PrintString(":D", 0, 127, 3, 10);
 			ST7565_BlitStatusLine();
 			ST7565_BlitFullScreen();
 			SYSTEM_DelayMs(500);
-			AUDIO_PlayBeep(BEEP_500HZ_60MS_DOUBLE_BEEP);
-			AUDIO_PlayBeep(BEEP_440HZ_40MS_OPTIONAL);
-			AUDIO_PlayBeep(BEEP_500HZ_60MS_DOUBLE_BEEP);
-			AUDIO_PlayBeep(BEEP_880HZ_200MS);
+			AUDIO_PlayBeep(BEEP_1333HZ_20MS_TRIPLE_BEEP);
+			AUDIO_PlayBeep(BEEP_1333HZ_20MS_TRIPLE_BEEP);
+			AUDIO_PlayBeep(BEEP_1333HZ_20MS_TRIPLE_BEEP);
 		} else { 
 			if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_VOLTAGE)
 			{

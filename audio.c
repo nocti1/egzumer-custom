@@ -94,6 +94,9 @@ void AUDIO_PlayBeep(BEEP_Type_t Beep)
 		case BEEP_880HZ_500MS:
 			ToneFrequency = 880;
 			break;
+		case BEEP_1333HZ_20MS_TRIPLE_BEEP:
+			ToneFrequency = 1333;
+			break;
 	}
 
 	BK4819_PlayTone(ToneFrequency, true);
@@ -107,6 +110,12 @@ void AUDIO_PlayBeep(BEEP_Type_t Beep)
 	uint16_t Duration;
 	switch (Beep)
 	{
+		case BEEP_1333HZ_20MS_TRIPLE_BEEP:
+			BK4819_ExitTxMute();
+			SYSTEM_DelayMs(20);
+			BK4819_EnterTxMute();
+			SYSTEM_DelayMs(10);
+			[[fallthrough]];
 		case BEEP_880HZ_60MS_TRIPLE_BEEP:
 			BK4819_ExitTxMute();
 			SYSTEM_DelayMs(60);
