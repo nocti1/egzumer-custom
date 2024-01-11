@@ -162,8 +162,6 @@ void Main(void)
 	{
 		UI_DisplayWelcome();
 
-		BACKLIGHT_TurnOn();
-
 		if (gEeprom.POWER_ON_DISPLAY_MODE != POWER_ON_DISPLAY_MODE_NONE)
 		{	// 2.55 second boot-up screen
 			while (boot_counter_10ms > 0)

@@ -17,15 +17,24 @@
 #include <string.h>
 
 #include "driver/eeprom.h"
+#include "driver/keyboard.h"
 #include "driver/st7565.h"
+#include "driver/system.h"
 #include "external/printf/printf.h"
 #include "helper/battery.h"
+#include "app/app.h"
 #include "settings.h"
+#include "audio.h"
 #include "misc.h"
 #include "ui/helper.h"
 #include "ui/welcome.h"
 #include "ui/status.h"
 #include "version.h"
+
+int customRand(int min, int max, int seed) {
+    seed = (seed * 333 + 12345) & 0x7fffffff;  // Linear congruential generator
+    return min + (seed % (max - min + 1));
+}
 
 void UI_DisplayReleaseKeys(void)
 {
@@ -45,6 +54,7 @@ void UI_DisplayWelcome(void)
 	char WelcomeString1[16];
 
 	memset(gStatusLine,  0, sizeof(gStatusLine));
+	BACKLIGHT_TurnOn();
 	UI_DisplayClear();
 
 	if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_NONE) {
@@ -54,22 +64,53 @@ void UI_DisplayWelcome(void)
 		memset(WelcomeString1, 0, sizeof(WelcomeString1));
 
 		if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_FULL_SCREEN) {
-			int BootImage[3][128] = {
-				{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },
-				{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },
-				{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, }
-			};
-			
-			// Loop through each pixel in the image
-			for (int y = 0; y < 3; y++) {
-				for (int x = 0; x < 128; x++) {
-					// Access the current pixel value
-					int pixelValue = BootImage[y][x];
-
-					// Call UI_DrawPixelBuffer based on the pixel value
-					UI_DrawPixelBuffer(gFrameBuffer, x, y, pixelValue);
+			int ButtonCount = 1;
+			ST7565_FillScreen(0xFF);
+			AUDIO_PlayBeep(BEEP_440HZ_500MS);
+			UI_DisplayClear();
+			SYSTEM_DelayMs(1000);			
+			if (KEYBOARD_Poll() != KEY_MENU) {
+				while (true) {
+					BACKLIGHT_TurnOff();
+					UI_DisplayClear();
+					SYSTEM_DelayMs(300);
+					BACKLIGHT_TurnOn();
+					AUDIO_PlayBeep(BEEP_880HZ_60MS_TRIPLE_BEEP);
+					if (KEYBOARD_Poll() != KEY_INVALID) {
+						ButtonCount++;
+						if (ButtonCount < 15) {
+							UI_PrintString("STOP!", 0, 127, 2, 10);
+						} else if (ButtonCount < 30) {
+							UI_PrintString("RELEASE", 0, 127, 1, 10);
+							UI_PrintString("ALL KEYS", 0, 127, 3, 10);
+						} else if (ButtonCount < 50) {
+							UI_PrintString("RELEASE", 0, 127, 1, 10);
+							UI_PrintString("THEM NOW", 0, 127, 3, 10);
+						} else if (ButtonCount < 80) {
+							UI_PrintString("FUCK OFF", 0, 127, 1, 10);
+							UI_PrintString("DOG", 0, 127, 3, 10);
+						} else {
+							UI_PrintString("STILL", 0, 127, 1, 10);
+							UI_PrintString("UNAUTHORISED", 0, 127, 3, 10);
+							UI_PrintString("CUNT", 0, 127, 5, 10);
+						}
+					} else {
+						//ButtonCount--;
+						UI_PrintString("UNAUTHORISED", 0, 127, 2, 10);
+					}
+					ST7565_BlitStatusLine();
+					ST7565_BlitFullScreen();
 				}
 			}
+
+			UI_PrintString("Welcome", 0, 127, 2, 10);
+			ST7565_BlitStatusLine();
+			ST7565_BlitFullScreen();
+			SYSTEM_DelayMs(500);
+			AUDIO_PlayBeep(BEEP_500HZ_60MS_DOUBLE_BEEP);
+			AUDIO_PlayBeep(BEEP_440HZ_40MS_OPTIONAL);
+			AUDIO_PlayBeep(BEEP_500HZ_60MS_DOUBLE_BEEP);
+			AUDIO_PlayBeep(BEEP_880HZ_200MS);
 		} else { 
 			if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_VOLTAGE)
 			{
